@@ -1,22 +1,20 @@
 #!/bin/sh
 
-files=$(find data/*)
-
 echo '================================================================================'
 echo 'load pg_denormalized'
 echo '================================================================================'
-time echo "$files" | tr ' ' '\n' | parallel ./load_denormalized.sh
+time parallel ./load_denormalized.sh ::: data/*.zip
 
 echo '================================================================================'
 echo 'load pg_normalized'
 echo '================================================================================'
-time printf '%s\n' "$files" | parallel python3 -u load_tweets.py \
+time parallel python3 -u load_tweets.py \
     --db="postgresql://postgres:pass@localhost:15433/postgres" \
-    --inputs
+    --inputs ::: data/*.zip
 
 echo '================================================================================'
 echo 'load pg_normalized_batch'
 echo '================================================================================'
-time printf '%s\n' "$files" | parallel python3 -u load_tweets_batch.py \
+time parallel python3 -u load_tweets_batch.py \
     --db="postgresql://postgres:pass@localhost:15434/postgres" \
-    --inputs
+    --inputs ::: data/*.zip
